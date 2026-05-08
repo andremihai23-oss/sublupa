@@ -22,24 +22,35 @@ export default function SearchModal({ isOpen, onClose }: Props) {
 
   const search = useCallback(
     async (q: string) => {
-      if (!q.trim()) { setResults([]); return; }
       setLoading(true);
-      const { data } = await supabase
+      const dbQuery = supabase
         .from('articles')
         .select('*')
-        .or(`title.ilike.%${q}%,excerpt.ilike.%${q}%,content.ilike.%${q}%`)
         .order('published_at', { ascending: false })
-        .limit(8);
+        .limit(20);
+
+      if (q.trim()) {
+        dbQuery.or(`title.ilike.%${q}%,excerpt.ilike.%${q}%,content.ilike.%${q}%`);
+      }
+
+      const { data } = await dbQuery;
       setResults(data ?? []);
       setLoading(false);
     },
     [supabase]
   );
 
+  // Load all articles when modal opens
   useEffect(() => {
+    if (isOpen) search('');
+  }, [isOpen, search]);
+
+  // Filter as user types
+  useEffect(() => {
+    if (!isOpen) return;
     const timer = setTimeout(() => search(query), 300);
     return () => clearTimeout(timer);
-  }, [query, search]);
+  }, [query, isOpen, search]);
 
   useEffect(() => {
     if (!isOpen) { setQuery(''); setResults([]); }
@@ -116,45 +127,46 @@ export default function SearchModal({ isOpen, onClose }: Props) {
           )}
 
           {!loading && results.length > 0 && (
-            <ul className="divide-y divide-navy-700/40">
-              {results.map((article) => (
-                <li key={article.id}>
-                  <button
-                    onClick={() => setSelected(article)}
-                    className="w-full flex items-center gap-4 px-5 py-4 hover:bg-navy-700/40 transition-colors text-left group"
-                  >
-                    <div className="relative w-14 h-14 rounded-xl overflow-hidden shrink-0 bg-navy-700">
-                      {article.cover_image_url && (
-                        <Image
-                          src={article.cover_image_url}
-                          alt={article.title}
-                          fill
-                          className="object-cover"
-                        />
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-white group-hover:text-accent-400 transition-colors truncate">
-                        {article.title}
-                      </p>
-                      <p className="text-xs text-slate-500 mt-0.5 truncate">
-                        {article.excerpt}
-                      </p>
-                      <span className="flex items-center gap-1 text-xs text-slate-600 mt-1">
-                        <CalendarDays className="w-3 h-3" />
-                        {formatDate(article.published_at)}
-                      </span>
-                    </div>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-
-          {!query && (
-            <p className="text-center text-slate-600 py-10 text-sm">
-              Start typing to search articles
-            </p>
+            <>
+              {!query && (
+                <p className="px-5 pt-4 pb-2 text-xs text-slate-500 font-medium uppercase tracking-wider">
+                  All Articles
+                </p>
+              )}
+              <ul className="divide-y divide-navy-700/40">
+                {results.map((article) => (
+                  <li key={article.id}>
+                    <button
+                      onClick={() => setSelected(article)}
+                      className="w-full flex items-center gap-4 px-5 py-4 hover:bg-navy-700/40 transition-colors text-left group"
+                    >
+                      <div className="relative w-14 h-14 rounded-xl overflow-hidden shrink-0 bg-navy-700">
+                        {article.cover_image_url && (
+                          <Image
+                            src={article.cover_image_url}
+                            alt={article.title}
+                            fill
+                            className="object-cover"
+                          />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-white group-hover:text-accent-400 transition-colors truncate">
+                          {article.title}
+                        </p>
+                        <p className="text-xs text-slate-500 mt-0.5 truncate">
+                          {article.excerpt}
+                        </p>
+                        <span className="flex items-center gap-1 text-xs text-slate-600 mt-1">
+                          <CalendarDays className="w-3 h-3" />
+                          {formatDate(article.published_at)}
+                        </span>
+                      </div>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </>
           )}
         </div>
       </div>
