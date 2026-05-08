@@ -1,0 +1,59 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --navy-900: #0A1628;
+  --navy-800: #0F2040;
+  --accent-500: #22C55E;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--navy-900);
+  color: #ffffff;
+  font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--navy-900);
+}
+::-webkit-scrollbar-thumb {
+  background: #1e3a5c;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-500);
+}
+
+/* Article content prose styles */
+.article-content {
+  line-height: 1.8;
+  font-size: 1.0625rem;
+  color: #cbd5e1;
+}
+
+.article-content p {
+  margin-bottom: 1.25rem;
+}
+
+/* Smooth focus rings */
+*:focus-visible {
+  outline: 2px solid #22C55E;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
