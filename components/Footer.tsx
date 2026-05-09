@@ -7,8 +7,8 @@ export default function Footer() {
         <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
           {/* Brand */}
           <div>
-            <span className="text-2xl font-black tracking-tight text-white">
-              Sub<span className="text-accent-500">Lupa</span>
+            <span className="text-2xl font-black tracking-tight" style={{ color: '#39ff14' }}>
+              FotbalulSubLupa
             </span>
             <p className="text-slate-500 text-sm mt-1">
               Premium sports &amp; media content.
@@ -54,10 +54,11 @@ export default function Footer() {
 
         <div className="mt-8 pt-6 border-t border-navy-800/50 text-center">
           <p className="text-slate-600 text-sm">
-            &copy; {year} SubLupa. All rights reserved.
+            &copy; {year} FotbalulSubLupa. All rights reserved.
           </p>
         </div>
       </div>
     </footer>
   );
 }
+
