@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
   if (settingsId) {
     const { error: updateError } = await supabase
       .from('site_settings')
-      .update({ logo_url: url, updated_at: new Date().toISOString() })
+      .update({ logo_url: url })
       .eq('id', settingsId);
     if (updateError) {
       return NextResponse.json({ error: updateError.message }, { status: 500 });
@@ -53,3 +53,4 @@ export async function POST(request: NextRequest) {
 
   return NextResponse.json({ url });
 }
+
