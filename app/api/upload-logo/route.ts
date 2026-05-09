@@ -1,13 +1,18 @@
-import { createClient } from '@/lib/supabase/server';
+import { createClient as createServerClient } from '@/lib/supabase/server';
+import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
-  const supabase = await createClient();
-
-  const { data: { user } } = await supabase.auth.getUser();
+  const serverSupabase = await createServerClient();
+  const { data: { user } } = await serverSupabase.auth.getUser();
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
+
+  const adminSupabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
 
   const formData = await request.formData();
   const file = formData.get('file') as File;
@@ -20,7 +25,7 @@ export async function POST(request: NextRequest) {
   const path = `logo-${Date.now()}.${ext}`;
   const bytes = await file.arrayBuffer();
 
-  const { error: uploadError } = await supabase.storage
+  const { error: uploadError } = await adminSupabase.storage
     .from('logos')
     .upload(path, bytes, { contentType: file.type, upsert: true });
 
@@ -28,11 +33,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: uploadError.message }, { status: 500 });
   }
 
-  const { data } = supabase.storage.from('logos').getPublicUrl(path);
+  const { data } = adminSupabase.storage.from('logos').getPublicUrl(path);
   const url = data.publicUrl;
 
   if (settingsId) {
-    const { error: updateError } = await supabase
+    const { error: updateError } = await adminSupabase
       .from('site_settings')
       .update({ logo_url: url })
       .eq('id', settingsId);
@@ -40,7 +45,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: updateError.message }, { status: 500 });
     }
   } else {
-    const { data: inserted, error: insertError } = await supabase
+    const { data: inserted, error: insertError } = await adminSupabase
       .from('site_settings')
       .insert({ logo_url: url })
       .select()
@@ -53,4 +58,3 @@ export async function POST(request: NextRequest) {
 
   return NextResponse.json({ url });
 }
-
