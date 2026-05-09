@@ -11,6 +11,7 @@ export async function POST(request: NextRequest) {
 
   const formData = await request.formData();
   const file = formData.get('file') as File;
+  const settingsId = formData.get('settingsId') as string | null;
   if (!file) {
     return NextResponse.json({ error: 'No file provided' }, { status: 400 });
   }
@@ -28,5 +29,27 @@ export async function POST(request: NextRequest) {
   }
 
   const { data } = supabase.storage.from('logos').getPublicUrl(path);
-  return NextResponse.json({ url: data.publicUrl });
+  const url = data.publicUrl;
+
+  if (settingsId) {
+    const { error: updateError } = await supabase
+      .from('site_settings')
+      .update({ logo_url: url, updated_at: new Date().toISOString() })
+      .eq('id', settingsId);
+    if (updateError) {
+      return NextResponse.json({ error: updateError.message }, { status: 500 });
+    }
+  } else {
+    const { data: inserted, error: insertError } = await supabase
+      .from('site_settings')
+      .insert({ logo_url: url })
+      .select()
+      .single();
+    if (insertError) {
+      return NextResponse.json({ error: insertError.message }, { status: 500 });
+    }
+    return NextResponse.json({ url, settingsId: inserted.id });
+  }
+
+  return NextResponse.json({ url });
 }
