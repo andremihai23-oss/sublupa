@@ -5,6 +5,7 @@ export interface Article {
   content: string;
   cover_image_url: string | null;
   video_url: string | null;
+  author: string | null;
   slug: string;
   published_at: string;
   created_at: string;
