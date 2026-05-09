@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import Image from 'next/image';
-import { X, CalendarDays } from 'lucide-react';
+import { X, CalendarDays, User } from 'lucide-react';
 import { formatDate, getVideoEmbedUrl, isDirectVideoUrl } from '@/lib/utils';
 import type { Article } from '@/lib/types';
 
@@ -68,10 +68,16 @@ export default function ArticleModal({ article, onClose }: Props) {
 
           {/* Body */}
           <div className="p-6 sm:p-10">
-            <div className="flex items-center gap-2 mb-4">
+            <div className="flex items-center gap-2 mb-4 flex-wrap">
               <span className="text-xs font-semibold text-accent-400 bg-accent-500/10 border border-accent-500/20 px-3 py-1 rounded-full">
                 Article
               </span>
+              {article.author && (
+                <span className="flex items-center gap-1.5 text-xs text-slate-300">
+                  <User className="w-3.5 h-3.5" />
+                  {article.author}
+                </span>
+              )}
               <span className="flex items-center gap-1.5 text-xs text-slate-500">
                 <CalendarDays className="w-3.5 h-3.5" />
                 {formatDate(article.published_at)}
@@ -125,3 +131,4 @@ export default function ArticleModal({ article, onClose }: Props) {
     </div>
   );
 }
+
