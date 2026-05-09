@@ -75,28 +75,14 @@ export default function AdminPage() {
     try {
       const formData = new FormData();
       formData.append('file', file);
+      if (settingsId) formData.append('settingsId', settingsId);
 
       const res = await fetch('/api/upload-logo', { method: 'POST', body: formData });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? 'Upload failed');
-      const url = json.url;
 
-      if (settingsId) {
-        const { error: updateError } = await supabase
-          .from('site_settings')
-          .update({ logo_url: url, updated_at: new Date().toISOString() })
-          .eq('id', settingsId);
-        if (updateError) throw updateError;
-      } else {
-        const { data: inserted, error: insertError } = await supabase
-          .from('site_settings')
-          .insert({ logo_url: url })
-          .select()
-          .single();
-        if (insertError) throw insertError;
-        if (inserted) setSettingsId(inserted.id);
-      }
-      setLogoUrl(url);
+      setLogoUrl(json.url);
+      if (json.settingsId) setSettingsId(json.settingsId);
     } catch (err: any) {
       setLogoError(err?.message ?? 'Upload failed.');
     } finally {
