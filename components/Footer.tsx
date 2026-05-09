@@ -19,7 +19,9 @@ export default function Footer() {
           <div className="flex items-center gap-4">
             {/* Facebook */}
             <a
-              href="#"
+              href="https://www.facebook.com/share/1FrFkdsLfF/"
+              target="_blank"
+              rel="noopener noreferrer"
               aria-label="Facebook"
               className="w-10 h-10 flex items-center justify-center rounded-xl bg-navy-800 hover:bg-accent-500 text-slate-400 hover:text-white border border-navy-700/50 hover:border-accent-500 transition-all duration-200 group"
             >
@@ -30,7 +32,9 @@ export default function Footer() {
 
             {/* Instagram */}
             <a
-              href="#"
+              href="https://www.instagram.com/fotbalul_sublupa?igsh=NnB5dmRtcXIxazBx"
+              target="_blank"
+              rel="noopener noreferrer"
               aria-label="Instagram"
               className="w-10 h-10 flex items-center justify-center rounded-xl bg-navy-800 hover:bg-accent-500 text-slate-400 hover:text-white border border-navy-700/50 hover:border-accent-500 transition-all duration-200"
             >
@@ -41,7 +45,9 @@ export default function Footer() {
 
             {/* TikTok */}
             <a
-              href="#"
+              href="https://www.tiktok.com/@sublupa1"
+              target="_blank"
+              rel="noopener noreferrer"
               aria-label="TikTok"
               className="w-10 h-10 flex items-center justify-center rounded-xl bg-navy-800 hover:bg-accent-500 text-slate-400 hover:text-white border border-navy-700/50 hover:border-accent-500 transition-all duration-200"
             >
@@ -61,4 +67,5 @@ export default function Footer() {
     </footer>
   );
 }
+
 
