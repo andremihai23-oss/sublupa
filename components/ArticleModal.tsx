@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect } from 'react';
-import Image from 'next/image';
 import { X, CalendarDays, User } from 'lucide-react';
 import { formatDate, getVideoEmbedUrl, isDirectVideoUrl } from '@/lib/utils';
 import type { Article } from '@/lib/types';
@@ -9,6 +8,54 @@ import type { Article } from '@/lib/types';
 interface Props {
   article: Article;
   onClose: () => void;
+}
+
+function renderContent(content: string) {
+  return content.split('\n').map((line, idx) => {
+    const imageMatch = line.match(/^\[image:\s*(.+?)\s*\|\s*(.+?)\s*\]$/);
+    if (imageMatch) {
+      const [, url, caption] = imageMatch;
+      return (
+        <figure key={idx} className="my-6">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={url} alt={caption} className="w-full h-auto rounded-xl object-cover" />
+          {caption && (
+            <figcaption className="text-center text-sm text-slate-500 mt-2 italic">{caption}</figcaption>
+          )}
+        </figure>
+      );
+    }
+
+    const videoMatch = line.match(/^\[video:\s*(.+?)\s*\|\s*(.+?)\s*\]$/);
+    if (videoMatch) {
+      const [, url, caption] = videoMatch;
+      const embedUrl = getVideoEmbedUrl(url);
+      const isDirect = isDirectVideoUrl(url);
+      return (
+        <figure key={idx} className="my-6">
+          <div className="aspect-video rounded-xl overflow-hidden bg-navy-900">
+            {embedUrl ? (
+              <iframe
+                src={embedUrl}
+                title={caption}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="w-full h-full"
+              />
+            ) : isDirect ? (
+              <video src={url} controls className="w-full h-full" />
+            ) : null}
+          </div>
+          {caption && (
+            <figcaption className="text-center text-sm text-slate-500 mt-2 italic">{caption}</figcaption>
+          )}
+        </figure>
+      );
+    }
+
+    if (line.trim()) return <p key={idx}>{line}</p>;
+    return <br key={idx} />;
+  });
 }
 
 export default function ArticleModal({ article, onClose }: Props) {
@@ -56,11 +103,11 @@ export default function ArticleModal({ article, onClose }: Props) {
           {/* Cover image */}
           {article.cover_image_url && (
             <div className="relative h-56 sm:h-72 w-full shrink-0">
-              <Image
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
                 src={article.cover_image_url}
                 alt={article.title}
-                fill
-                className="object-cover"
+                className="w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-navy-800/80 to-transparent" />
             </div>
@@ -92,18 +139,12 @@ export default function ArticleModal({ article, onClose }: Props) {
               {article.excerpt}
             </p>
 
-            {/* Article content */}
+            {/* Article content with inline images/videos */}
             <div className="article-content">
-              {article.content.split('\n').map((paragraph, idx) =>
-                paragraph.trim() ? (
-                  <p key={idx}>{paragraph}</p>
-                ) : (
-                  <br key={idx} />
-                )
-              )}
+              {renderContent(article.content)}
             </div>
 
-            {/* Video embed */}
+            {/* Bottom video embed (cover video) */}
             {article.video_url && (
               <div className="mt-8">
                 <div className="aspect-video rounded-2xl overflow-hidden bg-navy-900">
@@ -116,11 +157,7 @@ export default function ArticleModal({ article, onClose }: Props) {
                       className="w-full h-full"
                     />
                   ) : isDirectVideo ? (
-                    <video
-                      src={article.video_url}
-                      controls
-                      className="w-full h-full"
-                    />
+                    <video src={article.video_url} controls className="w-full h-full" />
                   ) : null}
                 </div>
               </div>
@@ -131,4 +168,5 @@ export default function ArticleModal({ article, onClose }: Props) {
     </div>
   );
 }
+
 
