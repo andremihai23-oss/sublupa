@@ -20,8 +20,8 @@ export default function Navbar({ logoUrl }: Props) {
           <div className="mt-4 rounded-2xl bg-navy-800/90 backdrop-blur-md border border-navy-700/50 shadow-xl">
             <div className="flex items-center justify-between h-16 px-5">
               {/* Logo */}
-              <a href="/" className="flex items-center gap-2 group">
-                {logoUrl ? (
+              <a href="/" className="flex items-center gap-3 group">
+                {logoUrl && (
                   <Image
                     src={logoUrl}
                     alt="SubLupa"
@@ -29,11 +29,10 @@ export default function Navbar({ logoUrl }: Props) {
                     height={160}
                     className="h-10 w-auto max-w-[160px] object-contain"
                   />
-                ) : (
-                  <span className="text-xl font-black tracking-tight text-white">
-                    Sub<span className="text-accent-500">Lupa</span>
-                  </span>
                 )}
+                <span className="text-xl font-black tracking-tight" style={{ color: '#39ff14' }}>
+                  FotbalulSubLupa
+                </span>
               </a>
 
               {/* Desktop nav */}
@@ -93,3 +92,4 @@ export default function Navbar({ logoUrl }: Props) {
     </>
   );
 }
+
