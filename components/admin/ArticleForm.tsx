@@ -23,6 +23,7 @@ export default function ArticleForm({ article, onSuccess, onCancel }: Props) {
 
   const [form, setForm] = useState({
     title: article?.title ?? '',
+    author: article?.author ?? '',
     excerpt: article?.excerpt ?? '',
     content: article?.content ?? '',
     cover_image_url: article?.cover_image_url ?? '',
@@ -83,6 +84,7 @@ export default function ArticleForm({ article, onSuccess, onCancel }: Props) {
 
     const payload = {
       title: form.title.trim(),
+      author: form.author.trim() || null,
       excerpt: form.excerpt.trim(),
       content: form.content.trim(),
       cover_image_url: form.cover_image_url || null,
@@ -126,6 +128,18 @@ export default function ArticleForm({ article, onSuccess, onCancel }: Props) {
         />
       </div>
 
+      {/* Author */}
+      <div>
+        <label className="block text-sm font-medium text-slate-300 mb-1.5">Author</label>
+        <input
+          type="text"
+          value={form.author}
+          onChange={(e) => update('author', e.target.value)}
+          className="w-full px-4 py-2.5 bg-navy-900 border border-navy-600 rounded-xl text-white placeholder-slate-600 focus:border-accent-500 focus:outline-none transition-colors text-sm"
+          placeholder="e.g. Mihai Marian"
+        />
+      </div>
+
       {/* Excerpt */}
       <div>
         <label className="block text-sm font-medium text-slate-300 mb-1.5">Excerpt</label>
@@ -154,7 +168,6 @@ export default function ArticleForm({ article, onSuccess, onCancel }: Props) {
       <div>
         <label className="block text-sm font-medium text-slate-300 mb-1.5">Cover Image</label>
         <div className="flex items-start gap-4">
-          {/* Preview */}
           <div
             onClick={() => imageInputRef.current?.click()}
             className="relative w-28 h-20 rounded-xl overflow-hidden bg-navy-900 border-2 border-dashed border-navy-600 hover:border-accent-500 cursor-pointer transition-colors shrink-0 flex items-center justify-center group"
@@ -262,3 +275,4 @@ export default function ArticleForm({ article, onSuccess, onCancel }: Props) {
     </form>
   );
 }
+
