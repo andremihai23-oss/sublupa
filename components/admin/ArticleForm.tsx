@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react';
 import Image from 'next/image';
-import { Upload, X, Loader2, ImageIcon } from 'lucide-react';
+import { Upload, X, Loader2, ImageIcon, PlayCircle } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { generateSlug } from '@/lib/utils';
 import type { Article } from '@/lib/types';
@@ -18,8 +18,13 @@ export default function ArticleForm({ article, onSuccess, onCancel }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [imagePreview, setImagePreview] = useState<string>(article?.cover_image_url ?? '');
+  const [showVideoPanel, setShowVideoPanel] = useState(false);
+  const [inlineVideoUrl, setInlineVideoUrl] = useState('');
+
   const imageInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
+  const inlineImageRef = useRef<HTMLInputElement>(null);
+  const contentRef = useRef<HTMLTextAreaElement>(null);
 
   const [form, setForm] = useState({
     title: article?.title ?? '',
@@ -35,6 +40,25 @@ export default function ArticleForm({ article, onSuccess, onCancel }: Props) {
 
   const update = (field: string, value: string) =>
     setForm((f) => ({ ...f, [field]: value }));
+
+  function insertAtCursor(tag: string) {
+    const textarea = contentRef.current;
+    if (!textarea) {
+      update('content', form.content + '\n' + tag + '\n');
+      return;
+    }
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const before = form.content.substring(0, start);
+    const after = form.content.substring(end);
+    const prefix = before.length > 0 && !before.endsWith('\n') ? '\n' : '';
+    const newContent = before + prefix + tag + '\n' + after;
+    update('content', newContent);
+    setTimeout(() => {
+      textarea.selectionStart = textarea.selectionEnd = start + prefix.length + tag.length + 1;
+      textarea.focus();
+    }, 0);
+  }
 
   async function uploadFile(file: File, bucket: string): Promise<string> {
     const ext = file.name.split('.').pop();
@@ -74,6 +98,28 @@ export default function ArticleForm({ article, onSuccess, onCancel }: Props) {
     } finally {
       setLoading(false);
     }
+  }
+
+  async function handleInlineImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setLoading(true);
+    try {
+      const url = await uploadFile(file, 'article-images');
+      insertAtCursor(`[image: ${url} | Add your caption here]`);
+    } catch {
+      setError('Image upload failed.');
+    } finally {
+      setLoading(false);
+      if (inlineImageRef.current) inlineImageRef.current.value = '';
+    }
+  }
+
+  function handleInlineVideoInsert() {
+    if (!inlineVideoUrl.trim()) return;
+    insertAtCursor(`[video: ${inlineVideoUrl.trim()} | Add your caption here]`);
+    setInlineVideoUrl('');
+    setShowVideoPanel(false);
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -155,13 +201,73 @@ export default function ArticleForm({ article, onSuccess, onCancel }: Props) {
       {/* Content */}
       <div>
         <label className="block text-sm font-medium text-slate-300 mb-1.5">Content</label>
+
+        {/* Toolbar */}
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-xs text-slate-500">Insert:</span>
+          <input
+            ref={inlineImageRef}
+            type="file"
+            accept="image/*"
+            onChange={handleInlineImageUpload}
+            className="hidden"
+          />
+          <button
+            type="button"
+            onClick={() => inlineImageRef.current?.click()}
+            disabled={loading}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-300 bg-navy-700 hover:bg-navy-600 rounded-lg transition-colors disabled:opacity-50"
+          >
+            <ImageIcon className="w-3.5 h-3.5" />
+            Image
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowVideoPanel(!showVideoPanel)}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-300 bg-navy-700 hover:bg-navy-600 rounded-lg transition-colors"
+          >
+            <PlayCircle className="w-3.5 h-3.5" />
+            Video
+          </button>
+        </div>
+
+        {/* Inline video panel */}
+        {showVideoPanel && (
+          <div className="mb-2 p-3 bg-navy-900 border border-navy-600 rounded-xl space-y-2">
+            <p className="text-xs text-slate-400">Paste a YouTube embed URL or any video URL:</p>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={inlineVideoUrl}
+                onChange={(e) => setInlineVideoUrl(e.target.value)}
+                className="flex-1 px-3 py-2 bg-navy-800 border border-navy-600 rounded-lg text-white placeholder-slate-600 focus:border-accent-500 focus:outline-none text-xs"
+                placeholder="https://www.youtube.com/embed/..."
+              />
+              <button
+                type="button"
+                onClick={handleInlineVideoInsert}
+                className="px-3 py-2 bg-accent-500 hover:bg-accent-600 text-white text-xs font-medium rounded-lg transition-colors"
+              >
+                Insert
+              </button>
+            </div>
+            <p className="text-xs text-slate-500">
+              YouTube: click Share → Embed → copy only the URL inside src="..."
+            </p>
+          </div>
+        )}
+
         <textarea
+          ref={contentRef}
           value={form.content}
           onChange={(e) => update('content', e.target.value)}
-          rows={8}
-          className="w-full px-4 py-2.5 bg-navy-900 border border-navy-600 rounded-xl text-white placeholder-slate-600 focus:border-accent-500 focus:outline-none transition-colors text-sm resize-y"
-          placeholder="Write your article content here…"
+          rows={10}
+          className="w-full px-4 py-2.5 bg-navy-900 border border-navy-600 rounded-xl text-white placeholder-slate-600 focus:border-accent-500 focus:outline-none transition-colors text-sm resize-y font-mono"
+          placeholder="Write your article content here… Use the Insert buttons above to add images or videos with captions."
         />
+        <p className="text-xs text-slate-600 mt-1">
+          After inserting, replace "Add your caption here" with your actual caption text.
+        </p>
       </div>
 
       {/* Cover image */}
@@ -275,4 +381,5 @@ export default function ArticleForm({ article, onSuccess, onCancel }: Props) {
     </form>
   );
 }
+
 
