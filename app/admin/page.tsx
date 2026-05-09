@@ -20,6 +20,7 @@ export default function AdminPage() {
   const [editingArticle, setEditingArticle] = useState<Article | null>(null);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [logoLoading, setLogoLoading] = useState(false);
+  const [logoError, setLogoError] = useState<string | null>(null);
   const [settingsId, setSettingsId] = useState<string | null>(null);
   const [tab, setTab] = useState<'articles' | 'settings'>('articles');
   const logoInputRef = useRef<HTMLInputElement>(null);
@@ -70,33 +71,34 @@ export default function AdminPage() {
     const file = e.target.files?.[0];
     if (!file) return;
     setLogoLoading(true);
+    setLogoError(null);
     try {
-      const ext = file.name.split('.').pop();
-      const path = `logo-${Date.now()}.${ext}`;
-      const { error: uploadError } = await supabase.storage
-        .from('logos')
-        .upload(path, file, { upsert: true });
-      if (uploadError) throw uploadError;
+      const formData = new FormData();
+      formData.append('file', file);
 
-      const { data } = supabase.storage.from('logos').getPublicUrl(path);
-      const url = data.publicUrl;
+      const res = await fetch('/api/upload-logo', { method: 'POST', body: formData });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? 'Upload failed');
+      const url = json.url;
 
       if (settingsId) {
-        await supabase
+        const { error: updateError } = await supabase
           .from('site_settings')
           .update({ logo_url: url, updated_at: new Date().toISOString() })
           .eq('id', settingsId);
+        if (updateError) throw updateError;
       } else {
-        const { data: inserted } = await supabase
+        const { data: inserted, error: insertError } = await supabase
           .from('site_settings')
           .insert({ logo_url: url })
           .select()
           .single();
+        if (insertError) throw insertError;
         if (inserted) setSettingsId(inserted.id);
       }
       setLogoUrl(url);
-    } catch (err) {
-      console.error('Logo upload failed', err);
+    } catch (err: any) {
+      setLogoError(err?.message ?? 'Upload failed.');
     } finally {
       setLogoLoading(false);
     }
@@ -190,7 +192,6 @@ export default function AdminPage() {
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-3">Logo</label>
 
-                {/* Current logo or placeholder */}
                 <div className="flex items-center gap-5 mb-4">
                   <div className="relative w-24 h-24 bg-navy-900 rounded-2xl border-2 border-dashed border-navy-600 overflow-hidden flex items-center justify-center">
                     {logoUrl ? (
@@ -228,10 +229,15 @@ export default function AdminPage() {
                   {logoUrl ? 'Replace Logo' : 'Upload Logo'}
                 </button>
 
-                {logoUrl && (
+                {logoUrl && !logoError && (
                   <p className="mt-3 text-xs text-accent-500 flex items-center gap-1">
                     <ImageIcon className="w-3.5 h-3.5" />
                     Logo active — visible in navbar
+                  </p>
+                )}
+                {logoError && (
+                  <p className="mt-3 text-xs text-red-400 bg-red-400/10 border border-red-400/20 rounded-xl px-3 py-2">
+                    Error: {logoError}
                   </p>
                 )}
               </div>
