@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import { CalendarDays, ArrowUpRight } from 'lucide-react';
+import { CalendarDays, ArrowUpRight, User } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 import type { Article } from '@/lib/types';
 
@@ -42,10 +42,18 @@ export default function ArticleCard({ article, onClick }: Props) {
         </p>
 
         <div className="flex items-center justify-between">
-          <span className="flex items-center gap-1.5 text-xs text-slate-500">
-            <CalendarDays className="w-3.5 h-3.5" />
-            {formatDate(article.published_at)}
-          </span>
+          <div className="flex flex-col gap-1">
+            {article.author && (
+              <span className="flex items-center gap-1.5 text-xs text-slate-400">
+                <User className="w-3.5 h-3.5" />
+                {article.author}
+              </span>
+            )}
+            <span className="flex items-center gap-1.5 text-xs text-slate-500">
+              <CalendarDays className="w-3.5 h-3.5" />
+              {formatDate(article.published_at)}
+            </span>
+          </div>
           <span className="flex items-center gap-1 text-xs font-semibold text-accent-500 group-hover:gap-2 transition-all duration-200">
             Read
             <ArrowUpRight className="w-3.5 h-3.5" />
@@ -55,3 +63,4 @@ export default function ArticleCard({ article, onClick }: Props) {
     </article>
   );
 }
+
