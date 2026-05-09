@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { CalendarDays, ArrowRight } from 'lucide-react';
+import { CalendarDays, ArrowRight, User } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 import ArticleModal from './ArticleModal';
 import type { Article } from '@/lib/types';
@@ -62,6 +62,12 @@ export default function Hero({ article }: Props) {
                     Read Article
                     <ArrowRight className="w-4 h-4" />
                   </button>
+                  {article.author && (
+                    <span className="flex items-center gap-1.5 text-sm text-slate-300">
+                      <User className="w-4 h-4" />
+                      {article.author}
+                    </span>
+                  )}
                   <span className="flex items-center gap-1.5 text-sm text-slate-400">
                     <CalendarDays className="w-4 h-4" />
                     {formatDate(article.published_at)}
@@ -88,3 +94,4 @@ export default function Hero({ article }: Props) {
     </>
   );
 }
+
