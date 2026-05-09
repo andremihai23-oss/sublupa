@@ -3,6 +3,10 @@ import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    return NextResponse.json({ error: 'Missing SUPABASE_SERVICE_ROLE_KEY env var' }, { status: 500 });
+  }
+
   const serverSupabase = await createServerClient();
   const { data: { user } } = await serverSupabase.auth.getUser();
   if (!user) {
@@ -11,26 +15,26 @@ export async function POST(request: NextRequest) {
 
   const adminSupabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
+    process.env.SUPABASE_SERVICE_ROLE_KEY
   );
 
   const formData = await request.formData();
   const file = formData.get('file') as File;
   const settingsId = formData.get('settingsId') as string | null;
+
   if (!file) {
     return NextResponse.json({ error: 'No file provided' }, { status: 400 });
   }
 
-  const ext = file.name.split('.').pop();
+  const ext = file.name.split('.').pop() ?? 'png';
   const path = `logo-${Date.now()}.${ext}`;
-  const bytes = await file.arrayBuffer();
 
   const { error: uploadError } = await adminSupabase.storage
     .from('logos')
-    .upload(path, bytes, { contentType: file.type, upsert: true });
+    .upload(path, file, { contentType: file.type || 'image/png', upsert: true });
 
   if (uploadError) {
-    return NextResponse.json({ error: uploadError.message }, { status: 500 });
+    return NextResponse.json({ error: `Storage error: ${uploadError.message}` }, { status: 500 });
   }
 
   const { data } = adminSupabase.storage.from('logos').getPublicUrl(path);
@@ -42,7 +46,7 @@ export async function POST(request: NextRequest) {
       .update({ logo_url: url })
       .eq('id', settingsId);
     if (updateError) {
-      return NextResponse.json({ error: updateError.message }, { status: 500 });
+      return NextResponse.json({ error: `DB update error: ${updateError.message}` }, { status: 500 });
     }
   } else {
     const { data: inserted, error: insertError } = await adminSupabase
@@ -51,7 +55,7 @@ export async function POST(request: NextRequest) {
       .select()
       .single();
     if (insertError) {
-      return NextResponse.json({ error: insertError.message }, { status: 500 });
+      return NextResponse.json({ error: `DB insert error: ${insertError.message}` }, { status: 500 });
     }
     return NextResponse.json({ url, settingsId: inserted.id });
   }
