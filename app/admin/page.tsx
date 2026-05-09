@@ -182,57 +182,88 @@ export default function AdminPage() {
 
         {/* Settings tab */}
         {tab === 'settings' && (
-          <div className="bg-navy-800 rounded-3xl border border-navy-700/50 p-6 sm:p-8 max-w-lg">
-            <h2 className="text-lg font-bold text-white mb-1">Site Settings</h2>
-            <p className="text-sm text-slate-500 mb-8">Manage your site logo and branding.</p>
+          <div className="space-y-6 max-w-lg">
+            <div className="bg-navy-800 rounded-3xl border border-navy-700/50 p-6 sm:p-8">
+              <h2 className="text-lg font-bold text-white mb-1">Site Settings</h2>
+              <p className="text-sm text-slate-500 mb-8">Manage your site logo and branding.</p>
 
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-3">Logo</label>
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-3">Logo</label>
 
-              {/* Current logo or placeholder */}
-              <div className="flex items-center gap-5 mb-4">
-                <div className="relative w-32 h-16 bg-navy-900 rounded-2xl border-2 border-dashed border-navy-600 overflow-hidden flex items-center justify-center">
-                  {logoUrl ? (
-                    <Image src={logoUrl} alt="Current logo" fill className="object-contain p-2" />
-                  ) : (
-                    <span className="text-xl font-black text-navy-600">SL</span>
-                  )}
+                {/* Current logo or placeholder */}
+                <div className="flex items-center gap-5 mb-4">
+                  <div className="relative w-24 h-24 bg-navy-900 rounded-2xl border-2 border-dashed border-navy-600 overflow-hidden flex items-center justify-center">
+                    {logoUrl ? (
+                      <Image src={logoUrl} alt="Current logo" fill className="object-contain p-2" />
+                    ) : (
+                      <span className="text-xl font-black text-navy-600">SL</span>
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-sm text-slate-400 mb-2">
+                      {logoUrl ? 'Current logo' : 'No logo uploaded'}
+                    </p>
+                    <p className="text-xs text-slate-600">PNG with transparent background — any ratio (1:1, 16:9, etc.)</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm text-slate-400 mb-2">
-                    {logoUrl ? 'Current logo' : 'No logo uploaded'}
+
+                <input
+                  ref={logoInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleLogoUpload}
+                  className="hidden"
+                />
+                <button
+                  type="button"
+                  disabled={logoLoading}
+                  onClick={() => logoInputRef.current?.click()}
+                  className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-navy-700 hover:bg-navy-600 disabled:opacity-50 rounded-xl transition-colors border border-navy-600"
+                >
+                  {logoLoading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Upload className="w-4 h-4" />
+                  )}
+                  {logoUrl ? 'Replace Logo' : 'Upload Logo'}
+                </button>
+
+                {logoUrl && (
+                  <p className="mt-3 text-xs text-accent-500 flex items-center gap-1">
+                    <ImageIcon className="w-3.5 h-3.5" />
+                    Logo active — visible in navbar
                   </p>
-                  <p className="text-xs text-slate-600">Recommended: PNG or SVG, transparent background</p>
+                )}
+              </div>
+            </div>
+
+            {/* Navbar preview */}
+            <div className="bg-navy-800 rounded-3xl border border-navy-700/50 p-6 sm:p-8">
+              <h3 className="text-sm font-semibold text-slate-300 mb-1">Navbar Preview</h3>
+              <p className="text-xs text-slate-500 mb-4">This is how your logo looks in the navbar.</p>
+              <div className="rounded-2xl bg-navy-800/90 border border-navy-700/50 shadow-xl">
+                <div className="flex items-center justify-between h-16 px-5">
+                  <a href="/" className="flex items-center gap-2">
+                    {logoUrl ? (
+                      <Image
+                        src={logoUrl}
+                        alt="SubLupa preview"
+                        width={160}
+                        height={160}
+                        className="h-10 w-auto max-w-[160px] object-contain"
+                      />
+                    ) : (
+                      <span className="text-xl font-black tracking-tight text-white">
+                        Sub<span className="text-accent-500">Lupa</span>
+                      </span>
+                    )}
+                  </a>
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs text-slate-400 px-3 py-1.5 bg-navy-700/60 rounded-xl">Search</span>
+                    <span className="text-xs text-slate-500 px-3 py-1.5 rounded-xl">Admin</span>
+                  </div>
                 </div>
               </div>
-
-              <input
-                ref={logoInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleLogoUpload}
-                className="hidden"
-              />
-              <button
-                type="button"
-                disabled={logoLoading}
-                onClick={() => logoInputRef.current?.click()}
-                className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-navy-700 hover:bg-navy-600 disabled:opacity-50 rounded-xl transition-colors border border-navy-600"
-              >
-                {logoLoading ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Upload className="w-4 h-4" />
-                )}
-                {logoUrl ? 'Replace Logo' : 'Upload Logo'}
-              </button>
-
-              {logoUrl && (
-                <p className="mt-3 text-xs text-accent-500 flex items-center gap-1">
-                  <ImageIcon className="w-3.5 h-3.5" />
-                  Logo active — visible in navbar
-                </p>
-              )}
             </div>
           </div>
         )}
