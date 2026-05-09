@@ -25,9 +25,9 @@ export default function Navbar({ logoUrl }: Props) {
                   <Image
                     src={logoUrl}
                     alt="SubLupa"
-                    width={120}
-                    height={36}
-                    className="h-8 w-auto object-contain"
+                    width={160}
+                    height={160}
+                    className="h-10 w-auto max-w-[160px] object-contain"
                   />
                 ) : (
                   <span className="text-xl font-black tracking-tight text-white">
