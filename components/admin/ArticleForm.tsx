@@ -60,6 +60,43 @@ export default function ArticleForm({ article, onSuccess, onCancel }: Props) {
     }, 0);
   }
 
+  function wrapSelection(prefix: string, suffix: string, placeholder: string) {
+    const textarea = contentRef.current;
+    if (!textarea) return;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selected = form.content.substring(start, end) || placeholder;
+    const before = form.content.substring(0, start);
+    const after = form.content.substring(end);
+    const newContent = before + prefix + selected + suffix + after;
+    update('content', newContent);
+    setTimeout(() => {
+      textarea.selectionStart = start + prefix.length;
+      textarea.selectionEnd = start + prefix.length + selected.length;
+      textarea.focus();
+    }, 0);
+  }
+
+  function prefixCurrentLine(linePrefix: string) {
+    const textarea = contentRef.current;
+    if (!textarea) return;
+    const start = textarea.selectionStart;
+    const content = form.content;
+    const lineStart = content.lastIndexOf('\n', start - 1) + 1;
+    const currentLine = content.substring(lineStart);
+    const lineEnd = currentLine.indexOf('\n');
+    const lineText = lineEnd === -1 ? currentLine : currentLine.substring(0, lineEnd);
+    const strippedLine = lineText.replace(/^(#{2,3} )/, '');
+    const newLine = lineText.startsWith(linePrefix) ? strippedLine : linePrefix + strippedLine;
+    const before = content.substring(0, lineStart);
+    const after = content.substring(lineStart + lineText.length);
+    update('content', before + newLine + after);
+    setTimeout(() => {
+      textarea.selectionStart = textarea.selectionEnd = start + (newLine.length - lineText.length);
+      textarea.focus();
+    }, 0);
+  }
+
   async function uploadFile(file: File, bucket: string): Promise<string> {
     const ext = file.name.split('.').pop();
     const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
@@ -203,7 +240,41 @@ export default function ArticleForm({ article, onSuccess, onCancel }: Props) {
         <label className="block text-sm font-medium text-slate-300 mb-1.5">Content</label>
 
         {/* Toolbar */}
-        <div className="flex items-center gap-2 mb-2">
+        <div className="flex flex-wrap items-center gap-2 mb-2">
+          <span className="text-xs text-slate-500">Format:</span>
+          <button
+            type="button"
+            onClick={() => prefixCurrentLine('## ')}
+            className="px-2.5 py-1.5 text-xs font-bold text-slate-300 bg-navy-700 hover:bg-navy-600 rounded-lg transition-colors"
+            title="Heading 2"
+          >
+            H2
+          </button>
+          <button
+            type="button"
+            onClick={() => prefixCurrentLine('### ')}
+            className="px-2.5 py-1.5 text-xs font-bold text-slate-300 bg-navy-700 hover:bg-navy-600 rounded-lg transition-colors"
+            title="Heading 3"
+          >
+            H3
+          </button>
+          <button
+            type="button"
+            onClick={() => wrapSelection('**', '**', 'bold text')}
+            className="px-2.5 py-1.5 text-xs font-bold text-slate-300 bg-navy-700 hover:bg-navy-600 rounded-lg transition-colors"
+            title="Bold"
+          >
+            B
+          </button>
+          <button
+            type="button"
+            onClick={() => wrapSelection('*', '*', 'italic text')}
+            className="px-2.5 py-1.5 text-xs font-italic text-slate-300 bg-navy-700 hover:bg-navy-600 rounded-lg transition-colors italic"
+            title="Italic"
+          >
+            I
+          </button>
+          <span className="text-xs text-slate-600">|</span>
           <span className="text-xs text-slate-500">Insert:</span>
           <input
             ref={inlineImageRef}
@@ -381,5 +452,6 @@ export default function ArticleForm({ article, onSuccess, onCancel }: Props) {
     </form>
   );
 }
+
 
 
