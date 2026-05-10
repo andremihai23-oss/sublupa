@@ -20,6 +20,9 @@ export default function ArticleForm({ article, onSuccess, onCancel }: Props) {
   const [imagePreview, setImagePreview] = useState<string>(article?.cover_image_url ?? '');
   const [showVideoPanel, setShowVideoPanel] = useState(false);
   const [inlineVideoUrl, setInlineVideoUrl] = useState('');
+  const [showLinkPanel, setShowLinkPanel] = useState(false);
+  const [linkUrl, setLinkUrl] = useState('');
+  const [linkSelection, setLinkSelection] = useState({ start: 0, end: 0 });
 
   const imageInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
@@ -152,6 +155,33 @@ export default function ArticleForm({ article, onSuccess, onCancel }: Props) {
     }
   }
 
+  function handleOpenLinkPanel() {
+    const textarea = contentRef.current;
+    if (textarea) {
+      setLinkSelection({ start: textarea.selectionStart, end: textarea.selectionEnd });
+    }
+    setShowLinkPanel(true);
+    setShowVideoPanel(false);
+  }
+
+  function handleLinkInsert() {
+    if (!linkUrl.trim()) return;
+    const textarea = contentRef.current;
+    if (!textarea) return;
+    const { start, end } = linkSelection;
+    const selectedText = form.content.substring(start, end) || 'link text';
+    const tag = `[${selectedText}](${linkUrl.trim()})`;
+    const before = form.content.substring(0, start);
+    const after = form.content.substring(end);
+    update('content', before + tag + after);
+    setLinkUrl('');
+    setShowLinkPanel(false);
+    setTimeout(() => {
+      textarea.selectionStart = textarea.selectionEnd = start + tag.length;
+      textarea.focus();
+    }, 0);
+  }
+
   function handleInlineVideoInsert() {
     if (!inlineVideoUrl.trim()) return;
     insertAtCursor(`[video: ${inlineVideoUrl.trim()} | Add your caption here]`);
@@ -274,6 +304,14 @@ export default function ArticleForm({ article, onSuccess, onCancel }: Props) {
           >
             I
           </button>
+          <button
+            type="button"
+            onClick={handleOpenLinkPanel}
+            className="px-2.5 py-1.5 text-xs font-medium text-slate-300 bg-navy-700 hover:bg-navy-600 rounded-lg transition-colors underline"
+            title="Link"
+          >
+            URL
+          </button>
           <span className="text-xs text-slate-600">|</span>
           <span className="text-xs text-slate-500">Insert:</span>
           <input
@@ -301,6 +339,39 @@ export default function ArticleForm({ article, onSuccess, onCancel }: Props) {
             Video
           </button>
         </div>
+
+        {/* Link panel */}
+        {showLinkPanel && (
+          <div className="mb-2 p-3 bg-navy-900 border border-navy-600 rounded-xl space-y-2">
+            <p className="text-xs text-slate-400">Paste the URL for the link:</p>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={linkUrl}
+                onChange={(e) => setLinkUrl(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleLinkInsert(); } }}
+                className="flex-1 px-3 py-2 bg-navy-800 border border-navy-600 rounded-lg text-white placeholder-slate-600 focus:border-accent-500 focus:outline-none text-xs"
+                placeholder="https://..."
+                autoFocus
+              />
+              <button
+                type="button"
+                onClick={handleLinkInsert}
+                className="px-3 py-2 bg-accent-500 hover:bg-accent-600 text-white text-xs font-medium rounded-lg transition-colors"
+              >
+                Insert
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowLinkPanel(false)}
+                className="px-3 py-2 text-slate-400 hover:text-white text-xs rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+            <p className="text-xs text-slate-500">Select text first to use it as the link label, or it will insert "link text" as placeholder.</p>
+          </div>
+        )}
 
         {/* Inline video panel */}
         {showVideoPanel && (
@@ -452,6 +523,7 @@ export default function ArticleForm({ article, onSuccess, onCancel }: Props) {
     </form>
   );
 }
+
 
 
 
