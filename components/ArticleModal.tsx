@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { X, CalendarDays, User } from 'lucide-react';
 import { formatDate, getVideoEmbedUrl, isDirectVideoUrl } from '@/lib/utils';
 import type { Article } from '@/lib/types';
@@ -8,6 +8,24 @@ import type { Article } from '@/lib/types';
 interface Props {
   article: Article;
   onClose: () => void;
+}
+
+function parseInline(text: string): React.ReactNode[] {
+  const parts: React.ReactNode[] = [];
+  const regex = /(\*\*(.+?)\*\*|\*(.+?)\*)/g;
+  let lastIndex = 0;
+  let match;
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > lastIndex) parts.push(text.substring(lastIndex, match.index));
+    if (match[0].startsWith('**')) {
+      parts.push(<strong key={match.index}>{match[2]}</strong>);
+    } else {
+      parts.push(<em key={match.index}>{match[3]}</em>);
+    }
+    lastIndex = match.index + match[0].length;
+  }
+  if (lastIndex < text.length) parts.push(text.substring(lastIndex));
+  return parts;
 }
 
 function renderContent(content: string) {
@@ -53,7 +71,15 @@ function renderContent(content: string) {
       );
     }
 
-    if (line.trim()) return <p key={idx}>{line}</p>;
+    if (line.startsWith('## ')) {
+      return <h2 key={idx} className="text-xl font-bold text-white mt-6 mb-2">{parseInline(line.slice(3))}</h2>;
+    }
+
+    if (line.startsWith('### ')) {
+      return <h3 key={idx} className="text-lg font-semibold text-white mt-5 mb-1">{parseInline(line.slice(4))}</h3>;
+    }
+
+    if (line.trim()) return <p key={idx}>{parseInline(line)}</p>;
     return <br key={idx} />;
   });
 }
@@ -168,5 +194,6 @@ export default function ArticleModal({ article, onClose }: Props) {
     </div>
   );
 }
+
 
 
