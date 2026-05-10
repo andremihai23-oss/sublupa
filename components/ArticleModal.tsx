@@ -12,15 +12,21 @@ interface Props {
 
 function parseInline(text: string): React.ReactNode[] {
   const parts: React.ReactNode[] = [];
-  const regex = /(\*\*(.+?)\*\*|\*(.+?)\*)/g;
+  const regex = /(\*\*(.+?)\*\*|\*(.+?)\*|\[(.+?)\]\((https?:\/\/[^\s)]+)\))/g;
   let lastIndex = 0;
   let match;
   while ((match = regex.exec(text)) !== null) {
     if (match.index > lastIndex) parts.push(text.substring(lastIndex, match.index));
     if (match[0].startsWith('**')) {
       parts.push(<strong key={match.index}>{match[2]}</strong>);
-    } else {
+    } else if (match[0].startsWith('*')) {
       parts.push(<em key={match.index}>{match[3]}</em>);
+    } else {
+      parts.push(
+        <a key={match.index} href={match[5]} target="_blank" rel="noopener noreferrer" className="text-accent-400 underline hover:text-accent-300 transition-colors">
+          {match[4]}
+        </a>
+      );
     }
     lastIndex = match.index + match[0].length;
   }
@@ -194,6 +200,7 @@ export default function ArticleModal({ article, onClose }: Props) {
     </div>
   );
 }
+
 
 
 
