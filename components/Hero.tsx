@@ -25,7 +25,7 @@ export default function Hero({ article }: Props) {
               alt={article.title}
               fill
               priority
-              className="object-cover transition-transform duration-700 group-hover:scale-105"
+              className="object-contain sm:object-cover transition-transform duration-700 group-hover:scale-105"
             />
           ) : (
             <div className="absolute inset-0 bg-gradient-to-br from-navy-700 via-navy-800 to-navy-900" />
@@ -94,4 +94,5 @@ export default function Hero({ article }: Props) {
     </>
   );
 }
+
 
