@@ -17,7 +17,7 @@ export default function Hero({ article }: Props) {
   return (
     <>
       <section className="pt-28 pb-6 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        <div className="relative w-full h-[520px] sm:h-[600px] lg:h-[68vh] rounded-3xl overflow-hidden group bg-navy-950">
+        <div className="relative w-full h-[300px] sm:h-[600px] lg:h-[68vh] rounded-3xl overflow-hidden group bg-navy-950">
           {/* Background image */}
           {article?.cover_image_url ? (
             <Image
@@ -25,7 +25,7 @@ export default function Hero({ article }: Props) {
               alt={article.title}
               fill
               priority
-              className="object-contain sm:object-cover transition-transform duration-700 group-hover:scale-105"
+              className="object-cover transition-transform duration-700 group-hover:scale-105"
             />
           ) : (
             <div className="absolute inset-0 bg-gradient-to-br from-navy-700 via-navy-800 to-navy-900" />
@@ -94,6 +94,7 @@ export default function Hero({ article }: Props) {
     </>
   );
 }
+
 
 
 
