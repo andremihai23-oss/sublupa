@@ -17,7 +17,7 @@ export default function Hero({ article }: Props) {
   return (
     <>
       <section className="pt-28 pb-6 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        <div className="relative w-full h-[520px] sm:h-[600px] lg:h-[68vh] rounded-3xl overflow-hidden group">
+        <div className="relative w-full h-[520px] sm:h-[600px] lg:h-[68vh] rounded-t-3xl sm:rounded-3xl overflow-hidden group">
           {/* Background image */}
           {article?.cover_image_url ? (
             <Image
@@ -94,5 +94,6 @@ export default function Hero({ article }: Props) {
     </>
   );
 }
+
 
 
