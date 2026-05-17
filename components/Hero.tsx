@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { CalendarDays, ArrowRight, User } from 'lucide-react';
-import { formatDate } from '@/lib/utils';
+import { formatDate, isDirectVideoUrl } from '@/lib/utils';
 import ArticleModal from './ArticleModal';
 import type { Article } from '@/lib/types';
 
@@ -18,8 +18,18 @@ export default function Hero({ article }: Props) {
     <>
       <section className="pt-28 pb-6 px-5 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <div className="relative w-full h-[350px] sm:h-[600px] lg:h-[68vh] rounded-3xl overflow-hidden group bg-navy-950">
-          {/* Background image */}
-          {article?.cover_image_url ? (
+          {/* Background video or image */}
+          {article?.video_url && isDirectVideoUrl(article.video_url) ? (
+            <video
+              src={article.video_url}
+              autoPlay
+              muted
+              loop
+              playsInline
+              poster={article.cover_image_url ?? undefined}
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+          ) : article?.cover_image_url ? (
             <Image
               src={article.cover_image_url}
               alt={article.title}
@@ -94,6 +104,7 @@ export default function Hero({ article }: Props) {
     </>
   );
 }
+
 
 
 
